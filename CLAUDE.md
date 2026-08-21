@@ -46,14 +46,16 @@ SVG, PNG, JPG or GIF at most 800x400 px; the registry rejects anything else,
 
 ## Layout
 
-| Path                         | Role                                                                  |
-| ---------------------------- | --------------------------------------------------------------------- |
-| `__init__.py`                | ComfyUI entry point. Sets `WEB_DIRECTORY`, calls `register_routes()`. |
-| `publisher.py`               | The whole backend: discovery, manifest, upload, job state.            |
-| `web/phantom-publisher.js`   | Toolbar action and publish dialog.                                    |
-| `web/phantom-publisher.css`  | Dialog styles.                                                        |
-| `web/publish-idempotency.js` | Idempotency key handling for the publish call.                        |
-| `test_publisher.py`          | The tests. Standard library `unittest` only.                          |
+| Path                         | Role                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `__init__.py`                | ComfyUI entry point. Sets `WEB_DIRECTORY`, calls `register_routes()`.                                  |
+| `publisher.py`               | The whole backend: discovery, manifest, upload, job state.                                             |
+| `web/phantom-publisher.js`   | Toolbar action and publish dialog.                                                                     |
+| `web/phantom-publisher.css`  | Dialog styles.                                                                                         |
+| `web/publish-idempotency.js` | Idempotency key handling for the publish call.                                                         |
+| `test_publisher.py`          | Python tests for `publisher.py`. Standard library `unittest` only.                                     |
+| `*.test.js`                  | Tests for the web assets. `node --test`, no dependencies.                                              |
+| `package.json`               | Nothing but `"type": "module"`, so the test runner reads the assets as ES modules. Not a Node package. |
 
 The node registers no ComfyUI nodes — `NODE_CLASS_MAPPINGS` is empty on purpose.
 It is a toolbar action, not a graph node.
@@ -61,13 +63,21 @@ It is a toolbar action, not a graph node.
 ## Testing
 
 ```bash
-python3 -m unittest test_publisher -v
+python3 -m unittest test_publisher -v   # publisher.py
+node --test                             # web/
 ```
 
-The tests stub `folder_paths`, `server` and `aiohttp` before importing
-`publisher.py`, so **no ComfyUI installation is needed and none should be
-added**. Keep it that way: the test suite must run on a bare Python 3.10+
-interpreter with no third-party packages. CI runs it on 3.10 through 3.13.
+Both suites run with **zero third-party dependencies, and it must stay that
+way.**
+
+- The Python tests stub `folder_paths`, `server` and `aiohttp` before importing
+  `publisher.py`, so no ComfyUI installation is needed and none should be added.
+  CI runs them on Python 3.10 through 3.13.
+- The web assets ship unbundled to a user's ComfyUI install, so there is no
+  build step to test through. `publish-idempotency.test.js` imports the module
+  directly. `phantom-publisher-ui.test.js` asserts against the source text of
+  `phantom-publisher.js` and `phantom-publisher.css`, because a DOM-building
+  script has nothing else to assert on without a browser.
 
 Every code change ships with tests.
 

@@ -25,6 +25,22 @@ jobs:
       - name: Run tests
         run: python -m unittest test_publisher -v
 
+  test-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      # The web assets ship unbundled to a user's ComfyUI install, so the suites
+      # run them straight from source with the built-in test runner. No
+      # dependencies, no build step, no lockfile.
+      - name: Run web asset tests
+        run: node --test
+
   version-match:
     runs-on: ubuntu-latest
     timeout-minutes: 5

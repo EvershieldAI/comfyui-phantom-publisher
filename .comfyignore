@@ -2,3 +2,5 @@ test_publisher.py
 __pycache__/
 .github/
 CLAUDE.md
+package.json
+*.test.js

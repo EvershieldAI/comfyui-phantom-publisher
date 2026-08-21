@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "//": "Exists only so `node --test` reads the web assets and their tests as ES modules, the same way a browser loads them. Excluded from the published package."
+}
