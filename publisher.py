@@ -25,7 +25,7 @@ from aiohttp import web
 import folder_paths
 from server import PromptServer
 
-PUBLISHER_VERSION = "0.2.0"
+PUBLISHER_VERSION = "0.3.0"
 CONFIG_FILENAME = ".phantom-publisher.json"
 _jobs: dict[str, dict[str, Any]] = {}
 PUBLISH_LOG_LIMIT = 200
