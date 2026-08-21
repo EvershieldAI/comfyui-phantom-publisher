@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # `gh pr diff` fetches the full base...head diff regardless of checkout
       # depth (the merge-commit ^1 trick the merged job uses needs history that
@@ -97,7 +97,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
@@ -161,7 +161,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
