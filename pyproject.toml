@@ -12,6 +12,6 @@ Repository = "https://github.com/EvershieldAI/comfyui-phantom-publisher"
 Documentation = "https://docs.phantomrouter.ai"
 
 [tool.comfy]
-PublisherId = "phantom"
+PublisherId = "phantomrouter"
 DisplayName = "Phantom Publisher"
 Icon = "https://docs.phantomrouter.ai/img/logo.svg"
