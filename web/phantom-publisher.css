@@ -1,0 +1,269 @@
+.phantom-publisher-toolbar {
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+.phantom-publisher-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgb(3 7 18 / 0.72);
+  backdrop-filter: blur(8px);
+}
+.phantom-publisher-dialog {
+  width: min(34rem, 100%);
+  box-sizing: border-box;
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid rgb(148 163 184 / 0.28);
+  border-radius: 0.75rem;
+  color: var(--fg-color, #e5e7eb);
+  background: var(--comfy-menu-bg, #171717);
+  box-shadow: 0 30px 80px rgb(0 0 0 / 0.45);
+}
+.phantom-publisher-dialog h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.phantom-publisher-dialog p {
+  margin: 0;
+  color: #a3a3a3;
+  line-height: 1.5;
+}
+.phantom-publisher-field {
+  display: grid;
+  gap: 0.4rem;
+  color: #d4d4d4;
+  font-size: 0.82rem;
+}
+.phantom-publisher-field[hidden] {
+  display: none;
+}
+.phantom-publisher-field input,
+.phantom-publisher-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #404040;
+  border-radius: 0.45rem;
+  color: inherit;
+  background: #0f0f0f;
+}
+.phantom-publisher-primary {
+  justify-self: start;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 0.45rem;
+  color: #07120c;
+  background: #5ee099;
+  font-weight: 650;
+  cursor: pointer;
+}
+.phantom-publisher-dialog progress {
+  width: 100%;
+  accent-color: #5ee099;
+}
+.phantom-publisher-progress-dialog {
+  width: min(46rem, 100%);
+  max-height: min(46rem, calc(100vh - 3rem));
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+}
+.phantom-publisher-progress-dialog > * {
+  min-width: 0;
+}
+.phantom-publisher-progress-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.phantom-publisher-progress-heading > div {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.phantom-publisher-progress-value {
+  flex: none;
+  color: #86efac;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.phantom-publisher-overall-progress {
+  display: block;
+  min-width: 0;
+  height: 0.65rem;
+}
+.phantom-publisher-phase {
+  overflow-wrap: anywhere;
+}
+.phantom-publisher-transfer-summary {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+.phantom-publisher-dependencies {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 6rem;
+  overflow-y: auto;
+  border: 1px solid rgb(148 163 184 / 0.2);
+  border-radius: 0.6rem;
+  background: rgb(3 7 18 / 0.28);
+}
+.phantom-publisher-dependency-list {
+  display: grid;
+}
+.phantom-publisher-dependency {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgb(148 163 184 / 0.14);
+}
+.phantom-publisher-dependency:last-child {
+  border-bottom: 0;
+}
+.phantom-publisher-dependency[data-status='uploading'] {
+  background: rgb(94 224 153 / 0.06);
+  box-shadow: inset 2px 0 #5ee099;
+}
+.phantom-publisher-dependency[data-status='failed'] {
+  background: rgb(251 113 133 / 0.06);
+  box-shadow: inset 2px 0 #fb7185;
+}
+.phantom-publisher-dependency-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+}
+.phantom-publisher-dependency-kind {
+  padding: 0.18rem 0.4rem;
+  border-radius: 0.3rem;
+  color: #a3a3a3;
+  background: rgb(148 163 184 / 0.12);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.phantom-publisher-dependency-name {
+  overflow: hidden;
+  color: #e5e7eb;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.phantom-publisher-dependency-state {
+  color: #a3a3a3;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+.phantom-publisher-dependency[data-status='uploading'] .phantom-publisher-dependency-state,
+.phantom-publisher-dependency[data-status='uploaded'] .phantom-publisher-dependency-state,
+.phantom-publisher-dependency[data-status='reused'] .phantom-publisher-dependency-state {
+  color: #86efac;
+}
+.phantom-publisher-dependency[data-status='failed'] .phantom-publisher-dependency-state {
+  color: #fb7185;
+}
+.phantom-publisher-dialog .phantom-publisher-dependency-detail {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.phantom-publisher-dependency-progress {
+  height: 0.35rem;
+}
+.phantom-publisher-dependency-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+.phantom-publisher-log {
+  overflow: hidden;
+  border: 1px solid rgb(148 163 184 / 0.2);
+  border-radius: 0.6rem;
+  background: rgb(3 7 18 / 0.2);
+}
+.phantom-publisher-log summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.8rem;
+  color: #d4d4d4;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.phantom-publisher-log[open] summary {
+  border-bottom: 1px solid rgb(148 163 184 / 0.14);
+}
+.phantom-publisher-log-count {
+  color: #737373;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.phantom-publisher-log-list {
+  max-height: 11rem;
+  overflow: auto;
+  padding: 0.35rem 0;
+  background: #0c0e12;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+}
+.phantom-publisher-log-entry {
+  display: grid;
+  grid-template-columns: 4.7rem 6rem minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0.35rem 0.8rem;
+  color: #a3a3a3;
+}
+.phantom-publisher-log-entry time {
+  color: #737373;
+  font-variant-numeric: tabular-nums;
+}
+.phantom-publisher-log-phase {
+  overflow: hidden;
+  color: #86efac;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.phantom-publisher-log-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.phantom-publisher-log-entry[data-level='warning'] .phantom-publisher-log-phase,
+.phantom-publisher-log-entry[data-level='warning'] .phantom-publisher-log-message {
+  color: #fbbf24;
+}
+.phantom-publisher-log-entry[data-level='error'] .phantom-publisher-log-phase,
+.phantom-publisher-log-entry[data-level='error'] .phantom-publisher-log-message {
+  color: #fb7185;
+}
+.phantom-publisher-error {
+  color: #fb7185 !important;
+}
+
+@media (max-width: 40rem) {
+  .phantom-publisher-progress-dialog {
+    max-height: calc(100vh - 1.5rem);
+  }
+  .phantom-publisher-dependency-header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .phantom-publisher-dependency-state {
+    grid-column: 1 / -1;
+  }
+  .phantom-publisher-log-entry {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+  .phantom-publisher-log-message {
+    grid-column: 1 / -1;
+  }
+}

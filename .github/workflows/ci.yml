@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The tests stub folder_paths, server and aiohttp, so ComfyUI itself is
+      # not a test dependency.
+      - name: Run tests
+        run: python -m unittest test_publisher -v
+
+  version-match:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # The registry reads pyproject.toml; the manifest Phantom stores reads
+      # PUBLISHER_VERSION. A drift between them mislabels every published
+      # workflow, so fail the build instead.
+      - name: Check pyproject version matches PUBLISHER_VERSION
+        run: |
+          python - <<'PY'
+          import re, sys, tomllib
+          from pathlib import Path
+          project = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
+          source = re.search(r'^PUBLISHER_VERSION = "([^"]+)"', Path('publisher.py').read_text(), re.M)
+          if source is None:
+              sys.exit('PUBLISHER_VERSION not found in publisher.py')
+          if source.group(1) != project:
+              sys.exit(f'Version drift: pyproject.toml {project} != publisher.py {source.group(1)}')
+          print(f'Versions match: {project}')
+          PY
