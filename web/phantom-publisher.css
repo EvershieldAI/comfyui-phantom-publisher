@@ -62,6 +62,28 @@
   font-weight: 650;
   cursor: pointer;
 }
+/* The destination line sits under the submit button, not above it: it is a
+   confirmation of where an immutable version is about to land, not a field. */
+.phantom-publisher-connection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #2a2a2a;
+  color: #8a8a8a;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+.phantom-publisher-link {
+  padding: 0;
+  border: 0;
+  color: #5ee099;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .phantom-publisher-dialog progress {
   width: 100%;
   accent-color: #5ee099;

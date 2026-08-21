@@ -22,7 +22,10 @@ const matches = (source, pattern) =>
   assert.ok(pattern.test(source), `expected the source to match ${pattern}`);
 
 const excludes = (source, needle) =>
-  assert.ok(!source.includes(needle), `expected the source NOT to contain ${JSON.stringify(needle)}`);
+  assert.ok(
+    !source.includes(needle),
+    `expected the source NOT to contain ${JSON.stringify(needle)}`,
+  );
 
 describe('Phantom publisher progress UI', () => {
   it('shows detailed overall and per-dependency upload progress', () => {
@@ -45,6 +48,38 @@ describe('Phantom publisher progress UI', () => {
     contains(css, "[data-level='error']");
     matches(css, /\.phantom-publisher-progress-dialog > \*\s*{\s*min-width: 0/);
     matches(css, /\.phantom-publisher-phase\s*{\s*overflow-wrap: anywhere/);
+  });
+});
+
+describe('Phantom publisher connection switching', () => {
+  it('names the destination and offers a switch before an immutable version lands', () => {
+    contains(js, 'Publishing to ${config.origin');
+    contains(js, 'Change connection');
+    contains(js, 'phantom-publisher-connection');
+    contains(js, 'resolve(RECONFIGURE)');
+    contains(css, '.phantom-publisher-connection');
+    contains(css, '.phantom-publisher-link');
+  });
+
+  it('re-enters the publish from the top after a switch, never mid-flight', () => {
+    // The target list and the console origin both belong to the old Phantom.
+    contains(js, 'if (await configure(config)) return publish();');
+  });
+
+  it('prefills the origins but never the token', () => {
+    contains(js, "origin.value = current.origin || ''");
+    contains(js, "consoleOrigin.value = current.console_origin || ''");
+    // The server does not return the saved token, so there is nothing to
+    // prefill and switching environments must mean pasting a new one.
+    excludes(js, 'token.value = current');
+    contains(js, 'Change Phantom connection');
+  });
+
+  it('treats a dismissed dialog as a cancel rather than hanging the caller', () => {
+    contains(js, 'const dialog = (onDismiss)');
+    contains(js, 'onDismiss?.()');
+    contains(js, 'dialog(() => resolve(false))');
+    contains(js, 'resolve(true)');
   });
 });
 

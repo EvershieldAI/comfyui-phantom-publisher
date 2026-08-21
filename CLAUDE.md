@@ -83,6 +83,9 @@ Every code change ships with tests.
 
 ## Conventions
 
+- The web assets are formatted by Prettier (`.prettierrc`, single quotes,
+  100 columns). Run `npx prettier --write web/` rather than hand-formatting —
+  without the config file Prettier rewrites every quote in the repo.
 - Python 3.10+, `from __future__ import annotations`, modern type syntax
   (`str | None`, not `Optional[str]`).
 - The publisher runs inside someone else's ComfyUI. Import from `folder_paths`

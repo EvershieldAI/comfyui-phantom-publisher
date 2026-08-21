@@ -30,7 +30,7 @@ const input = (placeholder, type = 'text') => {
   return element;
 };
 
-const dialog = () => {
+const dialog = (onDismiss) => {
   const overlay = document.createElement('div');
   overlay.className = 'phantom-publisher-overlay';
   const panel = document.createElement('div');
@@ -38,46 +38,72 @@ const dialog = () => {
   overlay.append(panel);
   document.body.append(overlay);
   const close = () => overlay.remove();
-  overlay.addEventListener('click', (event) => event.target === overlay && close());
+  // Only the click-away path is a dismissal. `close()` is also how a dialog
+  // exits after it succeeded, and that must not report itself as cancelled.
+  overlay.addEventListener('click', (event) => {
+    if (event.target !== overlay) return;
+    close();
+    onDismiss?.();
+  });
   return { panel, close };
 };
 
-const configure = async () => {
-  const modal = dialog();
-  modal.panel.innerHTML = `<h2>Connect Phantom</h2><p>The publisher token stays in this ComfyUI server's protected user configuration.</p>`;
-  const origin = input('https://api.phantomrouter.ai');
-  const consoleOrigin = input('https://app.phantomrouter.ai');
-  const token = input('php_…', 'password');
-  const save = document.createElement('button');
-  save.textContent = 'Save connection';
-  save.className = 'phantom-publisher-primary';
-  const status = document.createElement('p');
-  status.className = 'phantom-publisher-status';
-  save.onclick = async () => {
-    try {
-      await request('/config', {
-        method: 'PUT',
-        body: JSON.stringify({
-          origin: origin.value,
-          console_origin: consoleOrigin.value,
-          token: token.value,
-        }),
-      });
-      modal.close();
-    } catch (error) {
-      status.textContent = error.message;
-    }
-  };
-  modal.panel.append(
-    field('Phantom API origin', origin),
-    field('Phantom console origin', consoleOrigin),
-    field('Publisher token', token),
-    save,
-    status,
-  );
-};
+// `current` is the config the server reports, so reconnecting to a different
+// Phantom starts from the origins in use rather than from empty fields. The
+// token is deliberately absent: the server never returns it, so switching
+// environments always means pasting the token for the environment you are
+// switching to.
+const configure = (current = {}) =>
+  new Promise((resolve) => {
+    const reconfiguring = Boolean(current.configured);
+    const modal = dialog(() => resolve(false));
+    modal.panel.innerHTML = `<h2></h2><p></p>`;
+    modal.panel.querySelector('h2').textContent = reconfiguring
+      ? 'Change Phantom connection'
+      : 'Connect Phantom';
+    modal.panel.querySelector('p').textContent = reconfiguring
+      ? "Publishing goes to the Phantom you connect here. Switching environments needs that environment's own publisher token — the saved one is never shown again."
+      : "The publisher token stays in this ComfyUI server's protected user configuration.";
+    const origin = input('https://api.phantomrouter.ai');
+    const consoleOrigin = input('https://app.phantomrouter.ai');
+    const token = input('php_…', 'password');
+    origin.value = current.origin || '';
+    consoleOrigin.value = current.console_origin || '';
+    const save = document.createElement('button');
+    save.textContent = reconfiguring ? 'Save new connection' : 'Save connection';
+    save.className = 'phantom-publisher-primary';
+    const status = document.createElement('p');
+    status.className = 'phantom-publisher-status';
+    save.onclick = async () => {
+      try {
+        await request('/config', {
+          method: 'PUT',
+          body: JSON.stringify({
+            origin: origin.value,
+            console_origin: consoleOrigin.value,
+            token: token.value,
+          }),
+        });
+        modal.close();
+        resolve(true);
+      } catch (error) {
+        status.textContent = error.message;
+      }
+    };
+    modal.panel.append(
+      field('Phantom API origin', origin),
+      field('Phantom console origin', consoleOrigin),
+      field('Publisher token', token),
+      save,
+      status,
+    );
+  });
 
-const chooseTarget = async (remembered) => {
+// Resolved instead of a target when the user asks to reconnect, so the caller
+// restarts the publish against whichever Phantom they end up connected to.
+const RECONFIGURE = Symbol('reconfigure');
+
+const chooseTarget = async (remembered, config = {}) => {
   const data = await request('/targets');
   const rememberedTarget = data.targets.find((target) => target.workflow_id === remembered);
   const modal = dialog();
@@ -135,7 +161,11 @@ const chooseTarget = async (remembered) => {
         }
         const created = await request('/targets', {
           method: 'POST',
-          body: JSON.stringify({ name: name.value, slug: slug.value, provider: provider.value }),
+          body: JSON.stringify({
+            name: name.value,
+            slug: slug.value,
+            provider: provider.value,
+          }),
         });
         modal.close();
         resolve(created);
@@ -143,6 +173,22 @@ const chooseTarget = async (remembered) => {
         status.textContent = error.message;
       }
     };
+    // Naming the destination here is the point: the dialog is the last step
+    // before an immutable version lands, and dev and prod look identical once
+    // the token is saved.
+    const connection = document.createElement('div');
+    connection.className = 'phantom-publisher-connection';
+    const connectedTo = document.createElement('span');
+    connectedTo.textContent = `Publishing to ${config.origin || 'Phantom'}`;
+    const change = document.createElement('button');
+    change.type = 'button';
+    change.className = 'phantom-publisher-link';
+    change.textContent = 'Change connection';
+    change.onclick = () => {
+      modal.close();
+      resolve(RECONFIGURE);
+    };
+    connection.append(connectedTo, change);
     modal.panel.append(
       field('Workflow in Phantom', select),
       nameField,
@@ -150,6 +196,7 @@ const chooseTarget = async (remembered) => {
       providerField,
       submit,
       status,
+      connection,
     );
     modal.panel.addEventListener('cancel', () => reject(new Error('Publish cancelled')));
   });
@@ -355,13 +402,23 @@ const publish = async () => {
   try {
     const config = await request('/config');
     if (!config.configured) {
-      await configure();
+      await configure(config);
       return;
     }
     const graphExtra = app.graph.extra || (app.graph.extra = {});
     const phantom = graphExtra.phantom || {};
-    const target = await chooseTarget(phantom.workflow_id);
-    graphExtra.phantom = { origin: config.origin, workflow_id: target.workflow_id };
+    const target = await chooseTarget(phantom.workflow_id, config);
+    if (target === RECONFIGURE) {
+      // The target list belongs to the old Phantom, so re-enter from the top
+      // rather than reusing anything read before the switch. A dismissed
+      // dialog leaves the old connection in place and publishes nothing.
+      if (await configure(config)) return publish();
+      return;
+    }
+    graphExtra.phantom = {
+      origin: config.origin,
+      workflow_id: target.workflow_id,
+    };
     const refreshed = await app.graphToPrompt();
     const idempotencyStorageKey = `phantom-publisher:${target.workflow_id}:pending`;
     const publishPayload = {
